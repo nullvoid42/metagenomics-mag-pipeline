@@ -1,0 +1,104 @@
+# Conda environment for MAG (Metagenome-Assembled Genome) analysis pipeline
+# Day 4: Omics Case Study Week
+#
+# Usage:
+#   conda env create -f envs/environment.yaml
+#   conda activate mag-pipeline
+#
+# For Apple Silicon (M1/M2), some packages may need conda-forge channel:
+#   conda env create -f envs/environment.yaml -c conda-forge -c bioconda
+#   conda activate mag-pipeline
+
+name: mag-pipeline
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # ── Core pipeline tools ──────────────────────────────────────────
+  - fastp=0.23.*            # QC & adapter trimming
+  - megahit=1.2.*           # Metagenome assembler
+  - metabat2=2.15.*         # Binning
+  - maxbin2=2.15.*          # Binning
+  - concoct=1.1.*            # Binning (CONCOCT)
+  - das_tool=1.1.5          # Dereplication
+
+  # ── Quality assessment ──────────────────────────────────────────
+  - checkm-genome=1.2.*     # Completeness & contamination
+  - hmmer=3.3.*             # Hidden Markov models (used by CheckM)
+  - prodigal=2.6.*          # Gene prediction (used by CheckM)
+
+  # ── Taxonomy ────────────────────────────────────────────────────
+  - gtdbtk=2.1.*            # GTDB-Tk taxonomy classification
+  # NOTE: GTDB-Tk reference data (~5GB) must be downloaded separately:
+  #   download gtdbtk -o /path/to/gtdb_ref
+  #   export GTDBTK_DATA_PATH=/path/to/gtdb_ref
+
+  # ── Annotation ───────────────────────────────────────────────────
+  - prokka=1.29.*           # Gene annotation
+
+  # ── Abundance ───────────────────────────────────────────────────
+  - coverm=1.0.*            # MAG abundance estimation
+  - minimap2=2.24.*         # Mapping for CoverM
+
+  # ── Assembly & Binning helpers ──────────────────────────────────
+  - bowtie2=2.5.*           # Read alignment
+  - samtools=1.17.*         # BAM processing
+  - bedtools=2.31.*        # Genome coverage
+  - bwa=0.7.*               # Alternative aligner
+
+  # ── Python & data science ───────────────────────────────────────
+  - python=3.11.*
+  - pandas>=2.0
+  - matplotlib>=3.7
+  - numpy>=1.24
+  - seaborn>=0.12
+
+  # ── Utilities ────────────────────────────────────────────────────
+  - jq=1.6                   # JSON processing (for fastp reports)
+  - bc=1.07                  # Calculator
+  - parallel=20231122        # GNU parallel
+  - sra-tools=3.0.*         # SRA download (for test data)
+
+  # ── Optional HPC tools ───────────────────────────────────────────
+  # slurm-drmaa            # Uncomment if using SLURM HPC cluster
+  # snakemake=7.*          # Already assumed installed globally
+
+  # ── R & Bioconductor (for advanced stats) ───────────────────────
+  - r-base=4.3.*
+  - r-tidyverse>=2.0
+
+  # ── Pip-installed tools (if not available via conda) ────────────
+  # NOTE: Some tools are easier to install via pip
+  # Install these separately if conda versions fail:
+  #
+  # pip install \
+  #   das_tab_to_bin.rb   # DAS Tool helper scripts
+  #
+  # Or use the conda-forge channel for better M1 compatibility:
+  # conda install -c conda-forge das_tool
+
+  # ── Platform-specific notes ─────────────────────────────────────
+  # On Apple Silicon (M1/M2/M3):
+  #   conda install -c conda-forge -c bioconda ... --platform=osx-arm64
+  #
+  # On HPC (Linux x86_64):
+  #   module load anaconda3/2023.03
+  #   conda env create -f envs/environment.yaml
+  #
+  # On macOS Intel:
+  #   conda env create -f envs/environment.yaml -c conda-forge -c bioconda
+
+  # ── Post-install notes ─────────────────────────────────────────
+  # 1. Download GTDB-Tk reference data (~5GB):
+  #    gtdbtk download_refdata --db_dir $GTDBTK_DATA_PATH
+  #
+  # 2. Download CAMI test data:
+  #    bash bin/download_test_data.sh cami
+  #
+  # 3. Update config/config.yaml with your sample names
+  #
+  # 4. Run:
+  #    snakemake --use-conda -j 8

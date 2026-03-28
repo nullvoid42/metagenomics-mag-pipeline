@@ -1,0 +1,88 @@
+# MAG Analysis Pipeline Configuration
+# Day 4: Omics Case Study Week
+
+project:
+  name: "mag_pipeline"
+  # List your sample names here. Read files should be named: {sample}_1.fastq.gz, {sample}_2.fastq.gz
+  samples:
+    - "ERR011100"
+  threads: 32
+
+data:
+  # Directory containing raw read files (can be absolute or relative to project root)
+  reads_dir: "data/reads"
+  # Adapter sequences (leave empty "" for auto-detection by fastp)
+  adapters: ""
+
+assembly:
+  tool: "megahit"
+  # Minimum contig length for binning (bp)
+  min_contig_len: 1500
+  # MEGAHIT specific options
+  megahit_opts: "--min-count 2 --k-min 27 --k-max 91 --k-step 10"
+
+binners:
+  metabat2: true
+  maxbin2: true
+  concoct: true
+
+dastool:
+  score_thresh: 0.5
+  search_engine: "blast"       # blast or usearch
+  completeness_weight: 1.0
+  contamination_penalty: 1.0
+
+checkm:
+  # Use lineage-specific marker set (more accurate) vs universal (faster)
+  lineage_wf: true
+  # Reduce output for speed: set to false for full CheckM output
+  reduced_tree: false
+
+gtdbtk:
+  # Path to GTDB-Tk reference data (set GTDBTK_DATA_PATH env var before running)
+  # Default: $GTDBTK_DATA_PATH if set, else /tmp/gtdbtk_ref
+  ref_dir: ""
+  # Genome classification mode: classify_wf (full) or assign (faster)
+  classify_mode: "classify_wf"
+  # Minimum AA length for proteins
+  min_aa_length: 50
+
+prokka:
+  kingdom: "Bacteria"           # Archaea, Bacteria, Mitochondria, Viruses
+  genus: ""                     # Optional: specify genus
+  species: ""                   # Optional: specify species
+  add_genes: true               # Add genes to existing annotation
+  # Commercial use? Set to "none" for non-commercial only
+  compliant: "none"
+  # Additional Prokka flags
+  opts: "--cpus 0"
+
+coverm:
+  method: "coverage"            # coverage, coverage_wig, trimmed_mean, etc.
+  min_read_identity: 0.95       # Minimum read identity for mapping
+  min_read_align_length: 45     # Minimum alignment length
+  min_fraction: 0.0001         # Minimum fraction of reads for a MAG
+  # Couverture method: between 0-1 for trimmed mean
+  trim_upper: 0.0
+  trim_lower: 0.1
+
+# Cluster / HPC settings (for snakemake --cluster)
+cluster:
+  # SBATCH header template
+  sbatch_header: "sbatch -n 1 -t {runtime} --cpus-per-task {threads} --mem={mem}GB -J {jobname}"
+  default_runtime: "08:00:00"
+  default_mem: 16
+  jobname: "mag_pipeline"
+
+# Output directories (relative to project root)
+output:
+  qc: "results/01_qc"
+  assembly: "results/02_assembly"
+  binning: "results/03_binning"
+  dastool: "results/04_dastool"
+  checkm: "results/05_checkm"
+  gtdbtk: "results/06_gtdbtk"
+  prokka: "results/07_prokka"
+  coverm: "results/08_coverm"
+  figures: "results/figures"
+  summary: "results/summary_table.tsv"

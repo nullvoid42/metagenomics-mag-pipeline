@@ -1,0 +1,43 @@
+# ── Conda & Python ──────────────────────────────────────────────
+*.egg-info/
+__pycache__/
+*.py[cod]
+.env/
+.conda/
+conda-meta/
+*.egg
+
+# ── Pipeline outputs (keep results, not intermediate files) ────
+results/**/*.bam
+results/**/*.bai
+results/**/*.sam
+results/**/*.sorted.bam
+results/**/*.bt2
+results/**/*.depth.txt
+logs/
+*.log
+
+# ── Snakemake ─────────────────────────────────────────────────────
+.snakemake/
+*.snakemake/
+workflow/
+workflows/
+
+# ── Large reference data ─────────────────────────────────────────
+gtdb_ref/
+*_refdata/
+db2/
+GTDBTK_DATA_PATH/
+
+# ── macOS ─────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── IDE ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
